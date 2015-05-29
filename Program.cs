@@ -31,7 +31,7 @@ namespace threads
 		public static long trigger = 1;
 		public static Random rand;
 		public static long sum = 0;
-		public static int[] displayCounters = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		public static int[] counters = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		public static readonly int sumCol = 0;
 		public static readonly int threadCountCol = 15;
 		public static CounterCheck[] counterChecks = new CounterCheck[] {
@@ -92,8 +92,7 @@ namespace threads
 			threadFile = Path.Combine(FilePathRoot, string.Format("threads.{0,4:0000}.txt", pid));
 			Console.SetCursorPosition(0, stats);
 			Console.Write("{0,14:#,##0}      {1,4:###0} {2,4:###0} {3,4:###0} {4,4:###0} {5,4:###0} {6,4:###0} {7,4:###0} {8,4:###0} {9,4:###0} {10,4:###0}",
-				sum, displayCounters[0], displayCounters[1], displayCounters[2], displayCounters[3], displayCounters[4],
-				displayCounters[5], displayCounters[6], displayCounters[7], displayCounters[8], displayCounters[9]);
+				sum, counters[0], counters[1], counters[2], counters[3], counters[4], counters[5], counters[6], counters[7], counters[8], counters[9]);
 			Thread starter = new Thread(LoadManualThreads);
 			starter.Start();
 			Console.ReadLine();
@@ -162,6 +161,7 @@ namespace threads
 			try
 			{
 				int? lastValue = null;
+				string title = "";
 				while (values.Count > 0)
 				{
 					int value = values[0];
@@ -191,13 +191,25 @@ namespace threads
 						{
 							if (check.DecIndex != null)
 							{
-								Interlocked.Decrement(ref Program.displayCounters[(int)check.DecIndex]);
-								ConsoleWrite(check.DecCol, Program.stats, "{0,4:###0}", Program.displayCounters[(int)check.DecIndex]);
+								Interlocked.Decrement(ref Program.counters[(int)check.DecIndex]);
+								ConsoleWrite(check.DecCol, Program.stats, "{0,4:###0}", Program.counters[(int)check.DecIndex]);
+								title = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
+									Program.counters[0], Program.counters[1], Program.counters[2], Program.counters[3], Program.counters[4], 
+									Program.counters[5], Program.counters[6], Program.counters[7], Program.counters[8], Program.counters[9]);
+								Monitor.Enter(Program.syncScreen);
+								Console.Title = title;
+								Monitor.Exit(Program.syncScreen);
 							}
 							if (check.IncIndex != null)
 							{
-								Interlocked.Increment(ref Program.displayCounters[(int)check.IncIndex]);
-								ConsoleWrite(check.IncCol, Program.stats, "{0,4:###0}", Program.displayCounters[(int)check.IncIndex]);
+								Interlocked.Increment(ref Program.counters[(int)check.IncIndex]);
+								ConsoleWrite(check.IncCol, Program.stats, "{0,4:###0}", Program.counters[(int)check.IncIndex]);
+								title = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
+									Program.counters[0], Program.counters[1], Program.counters[2], Program.counters[3], Program.counters[4],
+									Program.counters[5], Program.counters[6], Program.counters[7], Program.counters[8], Program.counters[9]);
+								Monitor.Enter(Program.syncScreen);
+								Console.Title = title;
+								Monitor.Exit(Program.syncScreen);
 							}
 							break;
 						}
