@@ -138,7 +138,7 @@ namespace threads
 			this.limit = limit;
 			this.t = t;
 			Random r = new Random(DateTime.Now.Millisecond);
-			int delta = wait / 5;
+			int delta = wait / 10;
 			this.wait = wait + ((wait > 0) ? r.Next(-delta, delta) : 0);
 			this.left = (t * 4) % Console.WindowWidth;
 			this.top = (t * 4) / Console.WindowWidth;
