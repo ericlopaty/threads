@@ -193,23 +193,11 @@ namespace threads
 							{
 								Interlocked.Decrement(ref Program.counters[(int)check.DecIndex]);
 								ConsoleWrite(check.DecCol, Program.stats, "{0,4:###0}", Program.counters[(int)check.DecIndex]);
-								title = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
-									Program.counters[0], Program.counters[1], Program.counters[2], Program.counters[3], Program.counters[4], 
-									Program.counters[5], Program.counters[6], Program.counters[7], Program.counters[8], Program.counters[9]);
-								Monitor.Enter(Program.syncScreen);
-								Console.Title = title;
-								Monitor.Exit(Program.syncScreen);
 							}
 							if (check.IncIndex != null)
 							{
 								Interlocked.Increment(ref Program.counters[(int)check.IncIndex]);
 								ConsoleWrite(check.IncCol, Program.stats, "{0,4:###0}", Program.counters[(int)check.IncIndex]);
-								title = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
-									Program.counters[0], Program.counters[1], Program.counters[2], Program.counters[3], Program.counters[4],
-									Program.counters[5], Program.counters[6], Program.counters[7], Program.counters[8], Program.counters[9]);
-								Monitor.Enter(Program.syncScreen);
-								Console.Title = title;
-								Monitor.Exit(Program.syncScreen);
 							}
 							break;
 						}
