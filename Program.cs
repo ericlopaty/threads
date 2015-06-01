@@ -106,7 +106,7 @@ namespace threads
 				indexPool.Add(i);
 			while (indexPool.Count > 0)
 			{
-				int s = 0;	// r.Next(indexPool.Count);
+				int s = r.Next(indexPool.Count);
 				int t = indexPool[s];
 				indexPool.RemoveAt(s);
 				ManualWorker worker = new ManualWorker(maxCounter, t, threadWait);
@@ -137,7 +137,7 @@ namespace threads
 			this.limit = limit;
 			this.t = t;
 			Random r = new Random(DateTime.Now.Millisecond);
-			int delta = wait / 10;
+			int delta = wait / 5;
 			this.wait = wait + ((wait > 0) ? r.Next(-delta, delta) : 0);
 			this.left = (t * 4) % Console.WindowWidth;
 			this.top = (t * 4) / Console.WindowWidth;
@@ -152,7 +152,9 @@ namespace threads
 		{
 			Monitor.Enter(Program.syncScreen);
 			Console.SetCursorPosition(left, top);
-			Console.Write(format, value);
+			Console.ForegroundColor = (value >= 0) ? ConsoleColor.Gray : ConsoleColor.Black;
+			Console.BackgroundColor = (value >= 0) ? ConsoleColor.Black : ConsoleColor.Gray;
+			Console.Write(format, Math.Abs(value));
 			Monitor.Exit(Program.syncScreen);
 		}
 
@@ -161,28 +163,27 @@ namespace threads
 			try
 			{
 				int? lastValue = null;
-				string title = "";
 				while (values.Count > 0)
 				{
 					int value = values[0];
 					values.RemoveAt(0);
-					//				ConsoleColor.Black;
-					//    0-0999	ConsoleColor.Gray;
-					// 1000-1999	ConsoleColor.DarkYellow;
-					// 2000-2999	ConsoleColor.DarkRed;
-					// 3000-3999	ConsoleColor.DarkGreen;
-					// 4000-4999	ConsoleColor.DarkCyan;
-					// 5000-5999	ConsoleColor.Yellow;
-					// 6000-6999	ConsoleColor.Green;
-					// 7000-7999	ConsoleColor.Cyan;
-					// 8000-8999	ConsoleColor.Magenta;
-					// 9000-9999	ConsoleColor.Red;
-					//				ConsoleColor.Blue;
-					//				ConsoleColor.DarkBlue;
-					//				ConsoleColor.DarkGray;
-					//				ConsoleColor.DarkMagenta;
-					//				ConsoleColor.White;
-					ConsoleWrite(left, top, "{0,4:###0}", Math.Abs(value));
+					//ConsoleColor.Black;
+					//ConsoleColor.Gray;
+					//ConsoleColor.DarkYellow;
+					//ConsoleColor.DarkRed;
+					//ConsoleColor.DarkGreen;
+					//ConsoleColor.DarkCyan;
+					//ConsoleColor.Yellow;
+					//ConsoleColor.Green;
+					//ConsoleColor.Cyan;
+					//ConsoleColor.Magenta;
+					//ConsoleColor.Red;
+					//ConsoleColor.Blue;
+					//ConsoleColor.DarkBlue;
+					//ConsoleColor.DarkGray;
+					//ConsoleColor.DarkMagenta;
+					//ConsoleColor.White;
+					ConsoleWrite(left, top, "{0,4:###0}", value);
 					Interlocked.Add(ref Program.sum, value);
 					ConsoleWrite(1, Program.stats, "{0,14:#,##0}", Program.sum);
 					foreach (CounterCheck check in Program.counterChecks)
