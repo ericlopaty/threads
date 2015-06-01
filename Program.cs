@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Text;
@@ -12,9 +12,6 @@ using System.Diagnostics;
 
 namespace threads
 {
-
-	// 01234567890123456789012345678901234567890123456789012345678901234567890123456789
-	// 99,999,999,999 ###0 ###0-###0-###0-###0-###0-###0-###0-###0-###0-###0
 
 	class Program
 	{
