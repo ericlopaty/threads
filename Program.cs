@@ -150,16 +150,17 @@ namespace threads
 					values.RemoveAt(0);
 					Monitor.Enter(Program.syncScreen);
 					Console.SetCursorPosition(left, top);
-					Console.ForegroundColor = (value >= 0) ? ConsoleColor.Gray : ConsoleColor.Black;
-					Console.BackgroundColor = (value >= 0) ? ConsoleColor.Black : ConsoleColor.Gray;
+					Console.ForegroundColor = (value >= 0) ? ConsoleColor.Yellow : ConsoleColor.Cyan;
+					Console.BackgroundColor = (value >= 0) ? ConsoleColor.Black : ConsoleColor.Black;
 					Console.Write("{0,4:###0}", Math.Abs(value));
 					Interlocked.Add(ref Program.sum, value);
 					Console.SetCursorPosition(0, Program.stats);
-					Console.ForegroundColor = (value >= 0) ? ConsoleColor.Gray : ConsoleColor.Black;
-					Console.BackgroundColor = (value >= 0) ? ConsoleColor.Black : ConsoleColor.Gray;
 					Console.ForegroundColor = ConsoleColor.Gray;
 					Console.BackgroundColor = ConsoleColor.Black;
 					Console.Write("{0,14:#,##0}", Program.sum);
+					Monitor.Enter(Program.syncDb);
+					UpdateDatabase(t, value, Program.sum);
+					Monitor.Exit(Program.syncDb);
 					foreach (CounterCheck check in Program.counterChecks)
 					{
 						if (value == check.Value && lastValue == check.LastValue)
@@ -196,6 +197,44 @@ namespace threads
 			}
 			finally
 			{
+			}
+		}
+
+		private void UpdateDatabase(int t, int value, long sum)
+		{
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder();
+			b.IntegratedSecurity = true;
+			b.InitialCatalog = "Sandbox";
+			b.DataSource = "BRLI-MOBILE-ELO\\SQLExpress";
+			string message;
+			string query = "";
+			try
+			{
+				using (SqlConnection cn = new SqlConnection(b.ConnectionString))
+				{
+					cn.Open();
+					if (value > 0)
+					{
+						message = string.Format("In process {0}, thread number {1}, the value is {2} and the sum is {3}", Program.pid, t, value, sum);
+						query = string.Format("INSERT [Threads]([PID], [ThreadNumber], [Value], [Message]) VALUES({0}, {1}, {2}, '{3}')",
+							Program.pid, t, value, message);
+					}
+					else
+					{
+						query = string.Format("DELETE [Threads] WHERE [PID] = {0} AND [ThreadNumber] = {1} AND [Value] = {2}", Program.pid, t, Math.Abs(value));
+					}
+					using (SqlCommand cmd = new SqlCommand(query, cn))
+					{
+						cmd.ExecuteNonQuery();
+					}
+					cn.Close();
+				}
+			}
+			catch (System.Exception ex)
+			{
+				Console.SetCursorPosition(0, 20);
+				Console.WriteLine(query);
+				Console.WriteLine(ex.Message);
 			}
 		}
 	}
