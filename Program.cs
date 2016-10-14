@@ -38,17 +38,15 @@ namespace threads
                 }
                 Rand = new Random(DateTime.Now.Day);
                 MaxThreads = (int.Parse(args[0]) > 1000) ? 1000 : int.Parse(args[0]);
-                MaxCounter = (int.Parse(args[1]) > 9999) ? 9999 : int.Parse(args[1]);
+                MaxCounter = (int.Parse(args[1]) > 10000) ? 10000 : int.Parse(args[1]);
                 ThreadWait = (int.Parse(args[2]) > 10000) ? 10000 : int.Parse(args[2]);
                 int size = MaxThreads * 4;
                 Columns = Console.WindowWidth;
                 Rows = ((MaxThreads - 1) * 4) / Columns;
-                Stats = Rows + 2;
+                Stats = Rows + 1;
                 if (Console.WindowWidth < Columns) Console.WindowWidth = Columns;
                 if (Console.WindowHeight < Stats + 1) Console.WindowHeight = Stats + 2;
                 Console.Clear();
-                //Console.SetCursorPosition(0, stats);
-                //Console.Write("{0,14:#,##0}", sum);
                 var indexPool = new List<int>();
                 var r = new Random(DateTime.Now.Millisecond);
                 for (var i = 0; i < MaxThreads; i++)
@@ -104,23 +102,33 @@ namespace threads
             for (var i = -limit + 1; i <= 0; i++)
                 _values.Add(i);
             Monitor.Enter(Program.SyncScreen);
-            Console.SetCursorPosition(_left, _top);
-            Console.Write("####");
+            Flash(_left, _top, "####");
             Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
             Monitor.Exit(Program.SyncScreen);
+        }
+
+        private void Flash(int left, int top, string value)
+        {
+            //Console.SetCursorPosition(left, top);
+            //Console.ForegroundColor = ConsoleColor.DarkRed;
+            //Console.Write(value);
+            //Thread.Sleep(1);
+            //Console.ForegroundColor = ConsoleColor.Gray;
+            Console.SetCursorPosition(left, top);
+            Console.Write(value);
         }
 
         public void BusyAsABee()
         {
             try
             {
+                //Thread.Sleep(30000);
                 while (_values.Count > 0)
                 {
                     int value = _values[0];
                     _values.RemoveAt(0);
                     Monitor.Enter(Program.SyncScreen);
-                    Console.SetCursorPosition(_left, _top);
-                    Console.Write("{0,4:###0}", Math.Abs(value));
+                    Flash(_left, _top, string.Format("{0,4:###0}", Math.Abs(value)));
                     Interlocked.Add(ref Program.Sum, value);
                     Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
                     Monitor.Exit(Program.SyncScreen);
@@ -128,15 +136,13 @@ namespace threads
                         Thread.Sleep(_wait);
                 }
                 Monitor.Enter(Program.SyncScreen);
-                Console.SetCursorPosition(_left, _top);
-                Console.Write("----");
+                Flash(_left, _top, "----");
                 Monitor.Exit(Program.SyncScreen);
             }
             catch
             {
                 Monitor.Enter(Program.SyncScreen);
-                Console.SetCursorPosition(_left, _top);
-                Console.Write("%%%%");
+                Flash(_left, _top, "%%%%");
                 Monitor.Exit(Program.SyncScreen);
             }
             finally
