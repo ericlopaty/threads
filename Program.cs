@@ -94,6 +94,7 @@ namespace threads
             var r = new Random(DateTime.Now.Millisecond);
             var delta = wait / 5;
             _wait = wait + ((wait > 0) ? r.Next(-delta, delta) : 0);
+            _wait = (_wait < 0) ? 0 : _wait;
             _left = (t * 4) % Console.WindowWidth;
             _top = (t * 4) / Console.WindowWidth;
             _values = new List<int>();
@@ -109,11 +110,6 @@ namespace threads
 
         private void Flash(int left, int top, string value)
         {
-            //Console.SetCursorPosition(left, top);
-            //Console.ForegroundColor = ConsoleColor.DarkRed;
-            //Console.Write(value);
-            //Thread.Sleep(1);
-            //Console.ForegroundColor = ConsoleColor.Gray;
             Console.SetCursorPosition(left, top);
             Console.Write(value);
         }
@@ -122,7 +118,6 @@ namespace threads
         {
             try
             {
-                //Thread.Sleep(30000);
                 while (_values.Count > 0)
                 {
                     int value = _values[0];
