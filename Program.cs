@@ -17,7 +17,10 @@ namespace threads
     {
         //public static readonly string FilePathRoot = "c:\\temp\\threads";
         static readonly List<Thread> Threads = new List<Thread>();
+        public static readonly string FileName = "threads.txt";
+        public static readonly DateTime StartTime = DateTime.Now;
         public static object SyncScreen = new object();
+        public static object SyncFile = new object();
         public static long Total = 0;
         public static int MaxThreads, MaxCounter, ThreadWait;
         public static int Rows, Columns, Stats;
@@ -80,6 +83,12 @@ namespace threads
         private readonly int _left;
         private readonly int _top;
         private readonly List<int> _values;
+        private int _threadNumber;
+        private int _startDelay;
+        private DateTime _startTime;
+        private int _totalTime;
+        private int _avgWait;
+        private int _itemCount;
 
         static ManualWorker()
         {
@@ -88,6 +97,7 @@ namespace threads
         public ManualWorker(int limit, int t, int wait)
         {
             Interlocked.Add(ref Program.ThreadCount, 1);
+            _threadNumber = t;
             Monitor.Enter(Program.SyncScreen);
             Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
             Monitor.Exit(Program.SyncScreen);
@@ -102,10 +112,18 @@ namespace threads
                 _values.Add(i);
             for (var i = -limit + 1; i <= 0; i++)
                 _values.Add(i);
+            _itemCount = _values.Count;
             Monitor.Enter(Program.SyncScreen);
             Flash(_left, _top, "####");
             Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
             Monitor.Exit(Program.SyncScreen);
+        }
+
+        private void Log(string message)
+        {
+            Monitor.Enter(Program.SyncFile);
+            File.AppendAllText(Program.FileName, message + "\n");
+            Monitor.Exit(Program.SyncFile);
         }
 
         private void Flash(int left, int top, string value)
@@ -118,6 +136,8 @@ namespace threads
         {
             try
             {
+                _startTime = DateTime.Now;
+                _startDelay = (int)_startTime.Subtract(Program.StartTime).TotalMilliseconds;
                 while (_values.Count > 0)
                 {
                     int value = _values[0];
@@ -130,9 +150,15 @@ namespace threads
                     if (_wait > 0)
                         Thread.Sleep(_wait);
                 }
+                _totalTime =(int)DateTime.Now.Subtract(_startTime).TotalMilliseconds;
+                _avgWait = _totalTime / _itemCount;
                 Monitor.Enter(Program.SyncScreen);
                 Flash(_left, _top, "----");
                 Monitor.Exit(Program.SyncScreen);
+                string message = string.Format(
+                    "Thread {0,5:#,##0} Delay {1,8:#,##0} Items {2,6:#,##0} Wait {3,5:#,##0} Avg Wait {4,5:#,##0} Expected Total {5,8:#,##0} Actual Total {6,8:#,##0}",
+                    _threadNumber, _startDelay, _itemCount, _wait, _avgWait, _itemCount * _wait, _totalTime);
+                Log(message);
             }
             catch
             {
