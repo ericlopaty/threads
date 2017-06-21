@@ -99,7 +99,7 @@ namespace threads
             Interlocked.Add(ref Program.ThreadCount, 1);
             _threadNumber = t;
             Monitor.Enter(Program.SyncScreen);
-            Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
+            Console.Title = $"{Program.ThreadCount:N0} - {Program.Sum:N0}";
             Monitor.Exit(Program.SyncScreen);
             var r = new Random(DateTime.Now.Millisecond);
             var delta = wait / 5;
@@ -115,7 +115,7 @@ namespace threads
             _itemCount = _values.Count;
             Monitor.Enter(Program.SyncScreen);
             Flash(_left, _top, "####");
-            Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
+            Console.Title = $"{Program.ThreadCount:N0} - {Program.Sum:N0}";
             Monitor.Exit(Program.SyncScreen);
         }
 
@@ -143,9 +143,9 @@ namespace threads
                     int value = _values[0];
                     _values.RemoveAt(0);
                     Monitor.Enter(Program.SyncScreen);
-                    Flash(_left, _top, string.Format("{0,4:###0}", Math.Abs(value)));
+                    Flash(_left, _top, $"{Math.Abs(value),4:###0}");
                     Interlocked.Add(ref Program.Sum, value);
-                    Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
+                    Console.Title = $"{Program.ThreadCount:N0} - {Program.Sum:N0}";
                     Monitor.Exit(Program.SyncScreen);
                     if (_wait > 0)
                         Thread.Sleep(_wait);
@@ -170,7 +170,7 @@ namespace threads
             {
                 Interlocked.Add(ref Program.ThreadCount, -1);
                 Monitor.Enter(Program.SyncScreen);
-                Console.Title = string.Format("{0} - {1:#,##0}", Program.ThreadCount, Program.Sum);
+                Console.Title = $"{Program.ThreadCount:N0} - {Program.Sum:N0}";
                 Monitor.Exit(Program.SyncScreen);
             }
         }
