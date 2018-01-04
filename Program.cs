@@ -23,7 +23,7 @@ namespace threads
         public static object SyncFile = new object();
         public static long Total = 0;
         public static int MaxThreads, MaxCounter, ThreadWait;
-        public static int Rows, Columns, Stats;
+        public static int Rows, Columns;
         public static Random Rand;
         public static long Sum = 0;
         public static int ThreadCount = 0;
@@ -41,14 +41,13 @@ namespace threads
                 }
                 Rand = new Random(DateTime.Now.Day);
                 MaxThreads = (int.Parse(args[0]) > 1000) ? 1000 : int.Parse(args[0]);
-                MaxCounter = (int.Parse(args[1]) > 10000) ? 10000 : int.Parse(args[1]);
+                MaxCounter = (int.Parse(args[1]) > 100000) ? 100000 : int.Parse(args[1]);
                 ThreadWait = (int.Parse(args[2]) > 10000) ? 10000 : int.Parse(args[2]);
-                int size = MaxThreads * 4;
+                int size = MaxThreads * 5;
                 Columns = Console.WindowWidth;
-                Rows = ((MaxThreads - 1) * 4) / Columns;
-                Stats = Rows + 1;
+                Rows = ((MaxThreads - 1) * 5) / Columns + 2;
                 if (Console.WindowWidth < Columns) Console.WindowWidth = Columns;
-                if (Console.WindowHeight < Stats + 1) Console.WindowHeight = Stats + 2;
+                if (Console.WindowHeight < Rows) Console.WindowHeight = Rows;
                 Console.Clear();
                 var indexPool = new List<int>();
                 var r = new Random(DateTime.Now.Millisecond);
@@ -105,8 +104,8 @@ namespace threads
             var delta = wait / 5;
             _wait = wait + ((wait > 0) ? r.Next(-delta, delta) : 0);
             _wait = (_wait < 0) ? 0 : _wait;
-            _left = (t * 4) % Console.WindowWidth;
-            _top = (t * 4) / Console.WindowWidth;
+            _left = (t * 5) % Console.WindowWidth;
+            _top = (t * 5) / Console.WindowWidth;
             _values = new List<int>();
             for (var i = 0; i < limit; i++)
                 _values.Add(i);
@@ -114,7 +113,7 @@ namespace threads
                 _values.Add(i);
             _itemCount = _values.Count;
             Monitor.Enter(Program.SyncScreen);
-            Flash(_left, _top, "####");
+            Flash(_left, _top, "#####");
             Console.Title = $"{Program.ThreadCount:N0} - {Program.Sum:N0}";
             Monitor.Exit(Program.SyncScreen);
         }
@@ -143,17 +142,17 @@ namespace threads
                     int value = _values[0];
                     _values.RemoveAt(0);
                     Monitor.Enter(Program.SyncScreen);
-                    Flash(_left, _top, $"{Math.Abs(value),4:###0}");
+                    Flash(_left, _top, $"{Math.Abs(value),5:####0}");
                     Interlocked.Add(ref Program.Sum, value);
                     Console.Title = $"{Program.ThreadCount:N0} - {Program.Sum:N0}";
                     Monitor.Exit(Program.SyncScreen);
                     if (_wait > 0)
                         Thread.Sleep(_wait);
                 }
-                _totalTime =(int)DateTime.Now.Subtract(_startTime).TotalMilliseconds;
+                _totalTime = (int)DateTime.Now.Subtract(_startTime).TotalMilliseconds;
                 _avgWait = _totalTime / _itemCount;
                 Monitor.Enter(Program.SyncScreen);
-                Flash(_left, _top, "----");
+                Flash(_left, _top, "-----");
                 Monitor.Exit(Program.SyncScreen);
                 string message = string.Format(
                     "Thread {0,5:#,##0} Delay {1,8:#,##0} Items {2,6:#,##0} Wait {3,5:#,##0} Avg Wait {4,5:#,##0} Expected Total {5,8:#,##0} Actual Total {6,8:#,##0}",
@@ -163,7 +162,7 @@ namespace threads
             catch
             {
                 Monitor.Enter(Program.SyncScreen);
-                Flash(_left, _top, "%%%%");
+                Flash(_left, _top, "%%%%%");
                 Monitor.Exit(Program.SyncScreen);
             }
             finally
